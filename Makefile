@@ -1,5 +1,5 @@
 VERSION        ?= 0.3.2
-ORACLE_VERSION ?= 19.10
+ORACLE_VERSION ?= 12.1
 LDFLAGS        := -X main.Version=$(VERSION)
 GOFLAGS        := -ldflags "$(LDFLAGS) -s -w"
 ARCH           ?= $(shell uname -m)
