@@ -4,7 +4,7 @@
 [![GoDoc](https://godoc.org/github.com/iamseth/oracledb_exporter?status.svg)](http://godoc.org/github.com/iamseth/oracledb_exporter)
 [![Report card](https://goreportcard.com/badge/github.com/iamseth/oracledb_exporter)](https://goreportcard.com/badge/github.com/iamseth/oracledb_exporter)
 
-##### Table of Contents  
+##### Table of Contents
 
 [Description](#description)  
 [Installation](#installation)  
@@ -40,6 +40,7 @@ The following metrics are exposed currently.
 - oracledb_tablespace_bytes
 - oracledb_tablespace_max_bytes
 - oracledb_tablespace_free
+- oracledb_tablespace_used_percent
 - oracledb_process_count
 - oracledb_resource_current_utilization
 - oracledb_resource_limit_value
@@ -65,9 +66,9 @@ docker run -d --name oracledb_exporter --link=oracle -p 9161:9161 -e DATA_SOURCE
 
 Different Linux Distros:
 
-* `x.y.z` - Ubuntu Linux image
-* `x.y.z-oraclelinux` - Oracle Enterprise Linux image
-* `x.y.z-Alpine` - Alpine Linux image
+- `x.y.z` - Ubuntu Linux image
+- `x.y.z-oraclelinux` - Oracle Enterprise Linux image
+- `x.y.z-Alpine` - Alpine Linux image
 
 Forked Version:
 All the above docker images have a duplicate image tag ending in
@@ -87,7 +88,6 @@ In order to run, you'll need the [Oracle Instant Client Basic](http://www.oracle
 for your operating system. Only the basic version is required for execution.
 
 # Running
-
 Ensure that the environment variable DATA_SOURCE_NAME is set correctly before starting.
 DATA_SOURCE_NAME should be in Oracle EZCONNECT format:  
  https://docs.oracle.com/en/database/oracle/oracle-database/19/netag/configuring-naming-methods.html#GUID-B0437826-43C1-49EC-A94D-B650B6A4A6EE  
@@ -108,6 +108,20 @@ export DATA_SOURCE_NAME=user/password@//primaryhost:1521,standbyhost:1521/servic
 export DATA_SOURCE_NAME=user/password@//primaryhost:1521,standbyhost:1521/+ASM?as=sysdba
 # Then run the exporter
 /path/to/binary/oracledb_exporter --log.level error --web.listen-address 0.0.0.0:9161
+```
+## Default-metrics requirement
+Make sure to grant `SYS` privilege on `SELECT` statement for the monitoring user, on the following tables.
+```
+dba_tablespace_usage_metrics
+dba_tablespaces
+v$system_wait_class
+v$asm_diskgroup_stat
+v$datafile
+v$sysstat
+v$process
+v$waitclassmetric
+v$session
+v$resource_limit
 ```
 
 # Integration with System D
@@ -141,8 +155,6 @@ ExecStart=/usr/local/bin/oracledb_exporter  \
 WantedBy=multi-user.target
 ```
 
-
-
 Then tell System D to read files:
 
     systemctl daemon-reload
@@ -175,18 +187,14 @@ Usage of oracledb_exporter:
         Number of maximum idle connections in the connection pool. (default "0")
   --database.maxOpenConns string
         Number of maximum open connections in the connection pool. (default "10")
-  --web.secured-metrics  boolean
-        Expose metrics using https server. (default "false")
-  --web.ssl-server-cert string
-        Path to the PEM encoded certificate file.
-  --web.ssl-server-key string
-        Path to the PEM encoded key file.
+  --web.config
+        Specify which web configuration file to load
 ```
 
 # Default metrics
 
 This exporter comes with a set of default metrics defined in **default-metrics.toml**. You can modify this file or
-provide a different one using ``default.metrics`` option.
+provide a different one using `default.metrics` option.
 
 # Custom metrics
 
@@ -194,11 +202,13 @@ provide a different one using ``default.metrics`` option.
 
 This exporter does not have the metrics you want? You can provide new one using TOML file. To specify this file to the
 exporter, you can:
-- Use ``--custom.metrics`` flag followed by the TOML file
-- Export CUSTOM_METRICS variable environment (``export CUSTOM_METRICS=my-custom-metrics.toml``)
+
+- Use `--custom.metrics` flag followed by the TOML file
+- Export CUSTOM_METRICS variable environment (`export CUSTOM_METRICS=my-custom-metrics.toml`)
 
 This file must contain the following elements:
-- One or several metric section (``[[metric]]``)
+
+- One or several metric section (`[[metric]]`)
 - For each section a context, a request and a map between a field of your request and a comment.
 
 Here's a simple example:
@@ -304,10 +314,11 @@ This example allows to achieve this:
 
 ### Files & Folder:
 
-* tns_admin folder: `/path/to/tns_admin`
-* tnsnames.ora file: `/path/to/tns_admin/tnsnames.ora`
+- tns_admin folder: `/path/to/tns_admin`
+- tnsnames.ora file: `/path/to/tns_admin/tnsnames.ora`
 
 Example of a tnsnames.ora file:
+
 ```
 database =
 (DESCRIPTION =
@@ -323,9 +334,9 @@ database =
 
 ### Environment Variables
 
-* `TNS_ENTRY`: Name of the entry to use (`database` in the example file above)
-* `TNS_ADMIN`: Path you choose for the tns admin folder (`/path/to/tns_admin` in the example file above)
-* `DATA_SOURCE_NAME`: Datasource pointing to the `TNS_ENTRY` (`user/password@database` in the example file above)
+- `TNS_ENTRY`: Name of the entry to use (`database` in the example file above)
+- `TNS_ADMIN`: Path you choose for the tns admin folder (`/path/to/tns_admin` in the example file above)
+- `DATA_SOURCE_NAME`: Datasource pointing to the `TNS_ENTRY` (`user/password@database` in the example file above)
 
 # TLS connection to database
 
@@ -380,7 +391,7 @@ Or Alpine:
 
 ## Linux binaries
 
-Retrieve Oracle RPMs (version 18.5):
+Retrieve Oracle RPMs (version x.y):
 
     make download-rpms
 
@@ -390,7 +401,7 @@ Then run build:
 
 ## Windows binaries
 
-*Stollen from https://github.com/iamseth/oracledb_exporter/issues/40*
+_Stollen from https://github.com/iamseth/oracledb_exporter/issues/40_
 
 First, download Oracle Instant Client 64-Bit version basic and sdk versions.
 
@@ -407,16 +418,16 @@ Run the MSYS2 MINGW64 terminal and set dependencies packages:
 
 - Update pacman:
 
-    pacman -Su
+  pacman -Su
 
 - Close terminal and open a new terminal
 - Update all other packages:
 
-    pacman -Su
+  pacman -Su
 
 - Install pkg-config and gcc:
 
-    pacman -S mingw64/mingw-w64-x86_64-pkg-config mingw64/mingw-w64-x86_64-gcc
+  pacman -S mingw64/mingw-w64-x86_64-pkg-config mingw64/mingw-w64-x86_64-gcc
 
 Go to the pkg-config dir **c:/msys64/mingw64/lib/pkgconfig/** and create **oci8.pc** with the following content:
 
@@ -476,8 +487,7 @@ version as they are embedded in the container.
 
 Here an example to run this exporter (to scrap metrics from system/oracle@//host:1521/service-or-sid) and bind the exporter port (9161) to the global machine:
 
-```docker run -it --rm -p 9161:9161 -e DATA_SOURCE_NAME=system/oracle@//host:1521/service-or-sid iamseth/oracledb_exporter:0.2.6a```
-
+`docker run -it --rm -p 9161:9161 -e DATA_SOURCE_NAME=system/oracle@//host:1521/service-or-sid iamseth/oracledb_exporter:0.2.6a`
 
 ## Error scraping for wait_time
 
@@ -509,3 +519,15 @@ The root cause is Oracle's reaction of quering ASM-related views without ASM use
 ```
 $ find $ORACLE_BASE/diag/rdbms -name '*.tr[cm]' -mtime +14 -delete
 ```
+
+## TLS and basic authentication
+
+Apache Exporter supports TLS and basic authentication. This enables better
+control of the various HTTP endpoints.
+
+To use TLS and/or basic authentication, you need to pass a configuration file
+using the `--web.config` parameter. The format of the file is described
+[in the exporter-toolkit repository](https://github.com/prometheus/exporter-toolkit/blob/master/docs/web-configuration.md).
+
+Note that the TLS and basic authentication settings affect all HTTP endpoints:
+/metrics for scraping, /probe for probing, and the web UI.
