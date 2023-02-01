@@ -49,6 +49,7 @@ prereq: download-rpms
 
 oci.pc:
 	sed "s/@ORACLE_VERSION@/$(ORACLE_VERSION)/g" oci8.pc.template | \
+	sed "s/@MINOR_VERSION@/$(MINOR_VERSION)/g" | \
 	sed "s/@MAJOR_VERSION@/$(MAJOR_VERSION)/g" > oci8.pc
 
 go-build: oci.pc
